@@ -1,4 +1,5 @@
-﻿namespace WinFormsAppTest5;
+﻿
+namespace WinFormsAppTest5;
 
 partial class MusicPlayer
 {
@@ -52,6 +53,7 @@ partial class MusicPlayer
         // 
         // dataGridView1
         // 
+        dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         dataGridView1.Location = new Point(307, 52);
         dataGridView1.Name = "dataGridView1";
@@ -63,6 +65,7 @@ partial class MusicPlayer
         // 
         // dataGridView2
         // 
+        dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
         dataGridView2.Location = new Point(307, 243);
         dataGridView2.Name = "dataGridView2";
@@ -70,6 +73,7 @@ partial class MusicPlayer
         dataGridView2.RowTemplate.Height = 33;
         dataGridView2.Size = new Size(891, 238);
         dataGridView2.TabIndex = 2;
+        dataGridView2.CellClick += dataGridView2_CellClick;
         // 
         // button2
         // 
@@ -92,9 +96,9 @@ partial class MusicPlayer
         // 
         // pictureBox1
         // 
-        pictureBox1.Location = new Point(12, 52);
+        pictureBox1.Location = new Point(12, 14);
         pictureBox1.Name = "pictureBox1";
-        pictureBox1.Size = new Size(219, 185);
+        pictureBox1.Size = new Size(257, 223);
         pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
         pictureBox1.TabIndex = 5;
         pictureBox1.TabStop = false;
