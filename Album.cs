@@ -16,6 +16,7 @@ namespace WinFormsAppTest5
         public String ImageURL { get; set; }
 
         /* TODO: make a List<Track> songs
-         later connect to the database */
+         later connect to the database
+         DELETE this file if unused because of the joins */
     }
 }
