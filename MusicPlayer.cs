@@ -129,15 +129,6 @@ public partial class MusicPlayer : Form
                 headerText2 = dataGridView.Columns[(int)e.ColumnIndex].HeaderText;
             }
 
-            //if ((headerText2 == "Artist") || (headerText2 == "AlbumTitle"))
-            //{
-            MessageBox.Show(contents + " " + headerText2);
-
-            /*if (forNewQuery == null)
-                {
-                    return;
-                }*/
-            //else
             if ((headerText2 == "AlbumTitle") || (headerText2 == "AlbumID") || (headerText2 == "ReleaseYear") || (headerText2 == "ImageURL"))
             {
                 // forNewQuery needs to be AlbumTitle unless you click in Artist column
@@ -164,10 +155,10 @@ public partial class MusicPlayer : Form
                 // different binding source for different gridviews
                 dataGridView2.DataSource = bottomBindingSource;
             }
-            //}
         }
     }
 
+    // TODO: if on dataGridView2 album view, anything should take you to tracklist
     private void dataGridView2_CellClick(object sender, DataGridViewCellEventArgs e)
     {
         // add explicit cast
@@ -213,7 +204,6 @@ public partial class MusicPlayer : Form
             String headerText3 = dataGridView2.Columns[e.ColumnIndex].HeaderText;
             if ((headerText3 == "AlbumTitle") || (headerText3 == "AlbumID") || (headerText3 == "Artist") || (headerText3 == "ReleaseYear") || (headerText3 == "ImageURL"))    // on album view for particular artist
             {
-                MessageBox.Show(contents + " " + headerText3);
 
                 // always update image
                 String imageURL = dataGridView2.Rows[rowClicked].Cells[4].Value?.ToString();
@@ -223,7 +213,7 @@ public partial class MusicPlayer : Form
                 {
                     pictureBox1.Hide();
                     //MessageBox.Show("RETURN");
-                    return;
+                    //return;
                 }
                 else
                 {
@@ -234,23 +224,34 @@ public partial class MusicPlayer : Form
                 }
 
 
-                // switch screen if headerText3 == AlbumTitle
-                forNewQuery = contents;
-                MessageBox.Show(forNewQuery);
-                if (forNewQuery == null)
+                // switch screen no matter what if already on album view (if you get to this part of code, you are on album view)
+                if ((headerText3 == "AlbumTitle") || (headerText3 == "AlbumID") || (headerText3 == "ReleaseYear") || (headerText3 == "ImageURL"))
                 {
-                    return;
-                }
-                else if (headerText3 == "AlbumTitle")
-                {
-                    // create new AlbumsDAO
-                    AlbumsDAO myAlbumsDAO3 = new AlbumsDAO();
+                    // forNewQuery needs to be AlbumTitle unless you click in Artist column
+                    forNewQuery = dataGridView2.Rows[(int)rowClicked].Cells[2].Value?.ToString();
+                    MessageBox.Show(forNewQuery);
 
-                    bottomBindingSource.DataSource = myAlbumsDAO3.retrieveTracksFromAlbum(forNewQuery);
+                    AlbumsDAO myAlbumsDAO2 = new AlbumsDAO();
+
+                    bottomBindingSource.DataSource = myAlbumsDAO2.retrieveTracksFromAlbum(forNewQuery);
 
                     // tell the grid view that the binding source is associated with it
                     dataGridView2.DataSource = bottomBindingSource;
                 }
+                else if (headerText3 == "Artist")
+                {
+                    // forNewQuery needs to be AlbumTitle unless you click in Artist column
+                    forNewQuery = contents;
+                    MessageBox.Show(forNewQuery);
+
+                    AlbumsDAO myAlbumsDAO3 = new AlbumsDAO();
+                    bottomBindingSource.DataSource = myAlbumsDAO3.searchAlbumTitles(forNewQuery);
+
+                    // tell the grid view that the binding source is associated with it
+                    // different binding source for different gridviews
+                    dataGridView2.DataSource = bottomBindingSource;
+                }
+
             }
             else if ((headerText3 == "TrackTitle") || (headerText3 == "TrackNumber") || (headerText3 == "VideoURL"))    // showing tracklist
             {
