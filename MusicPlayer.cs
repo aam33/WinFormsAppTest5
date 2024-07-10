@@ -10,6 +10,28 @@ public partial class MusicPlayer : Form
     public MusicPlayer()
     {
         InitializeComponent();
+        // new code according to ChatGPT    // TODO: the InitializeWebView2() method should be called when a video is retrieved from the bottom dataGridView
+        //InitializeWebView2();
+    }
+
+    // TODO: make this dynamic so that it can switch WebView2 player or video played (take inputs of url and webview
+    private async void RetrieveVideo(string videoUrl)
+    {
+        await webView.EnsureCoreWebView2Async(null);
+        // Set a standard User-Agent string
+        webView.CoreWebView2.Settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36";
+        //webView.CoreWebView2.Navigate("https://www.youtube.com/embed/9FqaMehDsUc");
+        webView.CoreWebView2.Navigate(videoUrl);
+
+        /* doesn't work
+        string html = "<html><head>";
+        html += "<meta content='IE=Edge' http-equiv='X-UA-Compatible'/>";
+        html += "<iframe id='video' src='https://www.youtube.com/embed/{0}' width='600' height='300' frameborder='0' allowfullscreen></iframe>";
+        html += "</head></html>";
+
+        string videoID = videoUrl.Text.Split("=")[1]; // should be --> rc5wtRjgaI8
+        webView.CoreWebView2.DocumentText = string.format(html, videoID);*/
+
     }
 
     private void button1_Click(object sender, EventArgs e)
@@ -267,7 +289,9 @@ public partial class MusicPlayer : Form
                 {
                     MessageBox.Show("headerText3: " + headerText3);
                     MessageBox.Show("Video URL=" + videoURL);
-                    // TODO: pull up embedded video player
+                    // TODO: pull up embedded video player  // NEW TODO: embed just the video
+                    // new code to pull up video player
+                    RetrieveVideo(videoURL);
                 }
             }
         }
@@ -297,6 +321,7 @@ public partial class MusicPlayer : Form
             MessageBox.Show("Error loading image: " + ex.Message);
         }
     }   // end LoadImageFromUrlAsync
+
     // end of ChatGPT code
 
 }   // end public partial class MusicPlayer : Form

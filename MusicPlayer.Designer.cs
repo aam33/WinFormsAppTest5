@@ -35,9 +35,11 @@ partial class MusicPlayer
         button2 = new Button();
         textBox1 = new TextBox();
         pictureBox1 = new PictureBox();
+        webView = new Microsoft.Web.WebView2.WinForms.WebView2();
         ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
         ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
         ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+        ((System.ComponentModel.ISupportInitialize)webView).BeginInit();
         SuspendLayout();
         // 
         // button1
@@ -67,11 +69,11 @@ partial class MusicPlayer
         // 
         dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
         dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-        dataGridView2.Location = new Point(307, 243);
+        dataGridView2.Location = new Point(424, 243);
         dataGridView2.Name = "dataGridView2";
         dataGridView2.RowHeadersWidth = 62;
         dataGridView2.RowTemplate.Height = 33;
-        dataGridView2.Size = new Size(891, 238);
+        dataGridView2.Size = new Size(774, 238);
         dataGridView2.TabIndex = 2;
         dataGridView2.CellClick += dataGridView2_CellClick;
         // 
@@ -103,11 +105,23 @@ partial class MusicPlayer
         pictureBox1.TabIndex = 5;
         pictureBox1.TabStop = false;
         // 
+        // webView
+        // 
+        webView.AllowExternalDrop = true;
+        webView.CreationProperties = null;
+        webView.DefaultBackgroundColor = Color.White;
+        webView.Location = new Point(12, 254);
+        webView.Name = "webView";
+        webView.Size = new Size(390, 227);
+        webView.TabIndex = 6;
+        webView.ZoomFactor = 1D;
+        // 
         // MusicPlayer
         // 
         AutoScaleDimensions = new SizeF(10F, 25F);
         AutoScaleMode = AutoScaleMode.Font;
         ClientSize = new Size(1210, 493);
+        Controls.Add(webView);
         Controls.Add(pictureBox1);
         Controls.Add(textBox1);
         Controls.Add(button2);
@@ -119,6 +133,7 @@ partial class MusicPlayer
         ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
         ((System.ComponentModel.ISupportInitialize)dataGridView2).EndInit();
         ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+        ((System.ComponentModel.ISupportInitialize)webView).EndInit();
         ResumeLayout(false);
         PerformLayout();
     }
@@ -131,4 +146,5 @@ partial class MusicPlayer
     private Button button2;
     private TextBox textBox1;
     private PictureBox pictureBox1;
+    private Microsoft.Web.WebView2.WinForms.WebView2 webView;
 }
