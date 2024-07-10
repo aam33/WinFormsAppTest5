@@ -21,16 +21,25 @@ public partial class MusicPlayer : Form
         // Set a standard User-Agent string
         webView.CoreWebView2.Settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36";
         //webView.CoreWebView2.Navigate("https://www.youtube.com/embed/9FqaMehDsUc");
-        webView.CoreWebView2.Navigate(videoUrl);
+        //webView.CoreWebView2.Navigate(videoUrl);
 
-        /* doesn't work
-        string html = "<html><head>";
-        html += "<meta content='IE=Edge' http-equiv='X-UA-Compatible'/>";
-        html += "<iframe id='video' src='https://www.youtube.com/embed/{0}' width='600' height='300' frameborder='0' allowfullscreen></iframe>";
-        html += "</head></html>";
+        // test
+        string fileName = $"{Environment.CurrentDirectory}\\youtube.html";
+        if (File.Exists(fileName))
+        {
+            // Read the contents of the HTML file
+            string htmlContent = File.ReadAllText(fileName);
 
-        string videoID = videoUrl.Text.Split("=")[1]; // should be --> rc5wtRjgaI8
-        webView.CoreWebView2.DocumentText = string.format(html, videoID);*/
+            // Replace the placeholder URL with the actual video URL
+            string updatedHtmlContent = htmlContent.Replace("PLACEHOLDER", videoUrl);
+
+            // Write the updated HTML content back to the file
+            File.WriteAllText(fileName, updatedHtmlContent);
+            MessageBox.Show(fileName);
+
+            // Load the updated HTML file into the WebView2 control
+            webView.Source = new Uri($"file://{fileName}");
+        }
 
     }
 
