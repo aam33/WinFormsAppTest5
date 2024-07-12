@@ -38,7 +38,7 @@ namespace WinFormsAppTest5
             connection.Open(); // log in to server
 
             // define the sql statement to fetch all albums
-            MySqlCommand command = new MySqlCommand("SELECT albums.id, bands.name, albums.name, albums.year_released, albums.image_url FROM albums INNER JOIN bands ON albums.band_id = bands.id ORDER BY albums.id ASC", connection);
+            MySqlCommand command = new MySqlCommand("SELECT bands.name, albums.name, albums.year_released, albums.image_url, albums.album_url FROM albums INNER JOIN bands ON albums.band_id = bands.id ORDER BY albums.year_released ASC", connection);
 
             using (MySqlDataReader reader = command.ExecuteReader())
             {
@@ -46,15 +46,21 @@ namespace WinFormsAppTest5
                 {
                     AlbumBand ab = new AlbumBand
                     {
-                        AlbumID = reader.GetInt32(0),
-                        Artist = reader.GetString(1),
-                        AlbumTitle = reader.GetString(2),
-                        ReleaseYear = reader.GetInt32(3),
-                        ImageURL = reader.GetString(4)  // TEST STEP 3
+                        Artist = reader.IsDBNull(0) ? null : reader.GetString(0),
+                        AlbumTitle = reader.IsDBNull(1) ? null : reader.GetString(1),
+                        ReleaseYear = reader.IsDBNull(2) ? 0 : reader.GetInt32(2),
+                        ImageURL = reader.IsDBNull(3) ? null : reader.GetString(3),
+                        AlbumURL = reader.IsDBNull(4) ? null : reader.GetString(4)
+                        /*AlbumID = reader.GetInt32(0),
+                        Artist = reader.GetString(0),
+                        AlbumTitle = reader.GetString(1),
+                        ReleaseYear = reader.GetInt32(2),
+                        ImageURL = reader.GetString(3),  // TEST STEP 3
                         //BandID = reader.GetInt32(5),
                         //BandName = reader.GetString(6),
                         //YearFounded = reader.GetInt32(7),
                         //SingerID = reader.GetInt32(8)
+                        AlbumURL = reader.GetString(4)*/
                     };
                     returnAlbumsBands.Add(ab);    // attach as an item to our list
                 }
@@ -87,7 +93,7 @@ namespace WinFormsAppTest5
             // define the sql statement to fetch all albums
             // protect against SQL injection
             MySqlCommand command = new MySqlCommand();
-            command.CommandText = "SELECT albums.id, bands.name, albums.name, albums.year_released, albums.image_url FROM albums INNER JOIN bands ON albums.band_id = bands.id WHERE albums.name LIKE @search OR bands.name LIKE @search OR CAST(albums.year_released AS CHAR) LIKE @search ORDER BY albums.year_released ASC";   // TEST STEP 1
+            command.CommandText = "SELECT bands.name, albums.name, albums.year_released, albums.image_url, albums.album_url FROM albums INNER JOIN bands ON albums.band_id = bands.id WHERE albums.name LIKE @search OR bands.name LIKE @search OR CAST(albums.year_released AS CHAR) LIKE @search ORDER BY albums.year_released ASC";   // TEST STEP 1
             command.Parameters.AddWithValue("@search", searchWildPhrase);
             command.Connection = connection;    // defined at beginning of class
             
@@ -99,15 +105,21 @@ namespace WinFormsAppTest5
                 {
                     AlbumBand ab = new AlbumBand
                     {
-                        AlbumID = reader.GetInt32(0),
-                        Artist = reader.GetString(1),
-                        AlbumTitle = reader.GetString(2),
-                        ReleaseYear = reader.GetInt32(3),
-                        ImageURL = reader.GetString(4)  // TEST STEP 3
+                        Artist = reader.IsDBNull(0) ? null : reader.GetString(0),
+                        AlbumTitle = reader.IsDBNull(1) ? null : reader.GetString(1),
+                        ReleaseYear = reader.IsDBNull(2) ? 0 : reader.GetInt32(2),
+                        ImageURL = reader.IsDBNull(3) ? null : reader.GetString(3),
+                        AlbumURL = reader.IsDBNull(4) ? null : reader.GetString(4)
+                        /*AlbumID = reader.GetInt32(0),
+                        Artist = reader.GetString(0),
+                        AlbumTitle = reader.GetString(1),
+                        ReleaseYear = reader.GetInt32(2),
+                        ImageURL = reader.GetString(3),  // TEST STEP 3
                         //BandID = reader.GetInt32(5),
                         //BandName = reader.GetString(6),
                         //YearFounded = reader.GetInt32(7),
                         //SingerID = reader.GetInt32(8)
+                        AlbumURL = reader.GetString(4)*/
                     };
                     returnAlbumsBands.Add(ab);    // attach as an item to our list
                 }
@@ -146,7 +158,7 @@ namespace WinFormsAppTest5
                     {
                         TrackNumber = reader.IsDBNull(0) ? null : reader.GetInt32(0),
                         TrackTitle = reader.GetString(1),
-                        VideoURL = reader.IsDBNull(2) ? null : reader.GetString(2)
+                        MusicURL = reader.IsDBNull(2) ? null : reader.GetString(2)
                     };
                     returnTracklist.Add(t);    // attach as an item to our list
                 }
