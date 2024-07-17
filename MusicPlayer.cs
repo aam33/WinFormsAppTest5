@@ -157,10 +157,38 @@ public partial class MusicPlayer : Form
         // cell contents works!! :D
         MessageBox.Show("Cell contents: " + contents);
 
+
+
+        // TEST CODE FOR CLICKING THE ALBUM PLAY BUTTON
+    
+        String forNewQuery = "";
+        String toBePlayed = "";
+
+        if (e.ColumnIndex == -1)
+        {
+            MessageBox.Show("Play button clicked");
+            toBePlayed = dataGridView.Rows[(int)rowClicked].Cells[4].Value?.ToString();
+            forNewQuery = dataGridView.Rows[(int)rowClicked].Cells[1].Value?.ToString();
+            MessageBox.Show("for bottom grid view: " + forNewQuery);
+            MessageBox.Show("album URL: " + toBePlayed);
+
+            AlbumsDAO myAlbumsDAOTest = new AlbumsDAO();
+
+            bottomBindingSource.DataSource = myAlbumsDAOTest.retrieveTracksFromAlbum(forNewQuery);
+            playAlbum(toBePlayed);
+
+            // tell the grid view that the binding source is associated with it
+            dataGridView2.DataSource = bottomBindingSource;
+        }
+
+        // END TEST CODE FOR CLICKING THE ALBUM PLAY BUTTON
+
+
+
         // Check if column index is valid
         if (e.ColumnIndex >= 0 && e.ColumnIndex < dataGridView.Columns.Count)
         {
-            String imageURL = dataGridView.Rows[rowClicked].Cells[3].Value.ToString();
+            String imageURL = dataGridView.Rows[rowClicked].Cells[3].Value?.ToString();
 
             // test code starts here -- appears to be working as intended
             if (imageURL == null || imageURL.Length == 0)
@@ -179,8 +207,8 @@ public partial class MusicPlayer : Form
             // TODO: Get rid of message boxes
             // TODO: what if cells(column) 4 isn't always the URL?
 
-            String forNewQuery = "";
-            String toBePlayed = "";
+            //String forNewQuery = "";
+            //String toBePlayed = "";
             // set headerText if there is any
             String headerText2 = "";
             if (dataGridView.Columns[e.ColumnIndex].HeaderText != null)
@@ -266,6 +294,53 @@ public partial class MusicPlayer : Form
         MessageBox.Show("Cell contents: " + contents);
 
 
+        // TEST CODE FOR CLICKING THE PLAY BUTTON
+
+        String forNewQuery = "";
+        String toBePlayed = "";
+        
+        if (e.ColumnIndex == -1)
+        {
+            // if on filtered album view
+            if (dataGridView2.Columns.Count == 5)
+            {
+                MessageBox.Show("Play button clicked");
+                toBePlayed = dataGridView2.Rows[(int)rowClicked].Cells[4].Value?.ToString();
+                forNewQuery = dataGridView2.Rows[(int)rowClicked].Cells[1].Value?.ToString();
+                MessageBox.Show("for bottom grid view: " + forNewQuery);
+                MessageBox.Show("album URL: " + toBePlayed);
+
+                AlbumsDAO myAlbumsDAOTest = new AlbumsDAO();
+
+                bottomBindingSource.DataSource = myAlbumsDAOTest.retrieveTracksFromAlbum(forNewQuery);
+                playAlbum(toBePlayed);
+
+                // tell the grid view that the binding source is associated with it
+                dataGridView2.DataSource = bottomBindingSource;
+            }
+            // else if on track view
+            else if (dataGridView2.Columns.Count == 3)
+            {
+                // this string could be toBePlayed to reduce code complexity
+                String musicURL = dataGridView2.Rows[rowClicked].Cells[2].Value?.ToString();
+
+                if (string.IsNullOrEmpty(musicURL))
+                {
+                    MessageBox.Show("<ERROR: TRACK NOT FOUND>");
+                    return;
+                }
+                else
+                {
+                    MessageBox.Show("Music URL=" + musicURL);
+                    // new code to pull up video player
+                    RetrieveMusic(musicURL);
+                }
+            }
+        }
+
+        // END TEST CODE FOR CLICKING THE PLAY BUTTON
+
+
         // TODO: Get rid of message boxes
         // TODO: what if cells(column) 2 isn't always the URL?
 
@@ -274,9 +349,10 @@ public partial class MusicPlayer : Form
         {
             // if on the filtered album view, switch to track view when user clicks on album
             // else (on the tracklist), pull up video player for given URL
-            String forNewQuery = "";
-            String toBePlayed = "";
-            // TODO: fix error when clicking on border cell
+
+            //String forNewQuery = "";
+            //String toBePlayed = "";
+
             String headerText3 = dataGridView2.Columns[e.ColumnIndex].HeaderText;
             MessageBox.Show("check if column index is valid/headerText3: " + headerText3);
             if ((headerText3 == "AlbumTitle") || (headerText3 == "AlbumID") || (headerText3 == "Artist") || (headerText3 == "ReleaseYear") || (headerText3 == "ImageURL") || (headerText3 == "AlbumURL"))    // on album view for particular artist
@@ -289,8 +365,6 @@ public partial class MusicPlayer : Form
                 if (imageURL == null || imageURL.Length == 0)
                 {
                     pictureBox1.Hide();
-                    //MessageBox.Show("RETURN");
-                    //return;
                 }
                 else
                 {

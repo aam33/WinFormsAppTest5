@@ -1,6 +1,5 @@
 ﻿namespace WinFormsAppTest5
 {
-    // TEST
     internal class AlbumBand
     {
         //public int AlbumID { get; set; }
@@ -15,5 +14,4 @@
         public String AlbumURL { get; set; }
 
     }
-    // END TEST - THIS ENTIRE FILE TO BE COMMENTED OUT/DELETED IF DOESN'T WORK
 }
