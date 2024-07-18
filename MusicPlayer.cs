@@ -1,4 +1,9 @@
+using EO.Internal;
+using EO.WebBrowser;
+using Microsoft.Web.WebView2.WinForms;
+using Microsoft.Web.WebView2.Wpf;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 namespace WinFormsAppTest5;
 
@@ -10,8 +15,10 @@ public partial class MusicPlayer : Form
     public MusicPlayer()
     {
         InitializeComponent();
-        
-        RetrieveMusic("https://accounts.spotify.com/en/login?continue=https%3A%2F%2Fopen.spotify.com%2F");
+
+        webView.Source = new Uri("https://accounts.spotify.com/en/login?continue=https%3A%2F%2Fopen.spotify.com%2F");
+
+        //RetrieveMusic("https://accounts.spotify.com/en/login?continue=https%3A%2F%2Fopen.spotify.com%2F");
         //MessageBox.Show("Log in to Spotify in order to play entire tracks.");
 
         // attempt to handle KeyDown ENTER event
@@ -19,15 +26,22 @@ public partial class MusicPlayer : Form
         this.KeyPreview = true;
     }
 
-    // TODO: make this dynamic so that it can switch WebView2 player or video played (take inputs of url and webview
+
+
     private async void RetrieveMusic(string musicUrl)
     {
         await webView.EnsureCoreWebView2Async(null);
         // Set a standard User-Agent string
         webView.CoreWebView2.Settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36";
         //webView.CoreWebView2.Navigate("https://www.youtube.com/embed/9FqaMehDsUc");
-        webView.CoreWebView2.Navigate(musicUrl);
-        //webView.CoreWebView2.Navigate("https://open.spotify.com/embed/track/4PTG3Z6ehGkBFwjybzWkR8");
+
+
+
+        //webView.CoreWebView2.Navigate(musicUrl);
+
+
+
+        //webView.CoreWebView2.Navigate("https://open.spotify.com/embed/track/4PTG3Z6ehGkBFwjybzWkR8"); // rick roll
         /*
         // test
         string fileName = $"{Environment.CurrentDirectory}\\youtube.html";
@@ -47,10 +61,57 @@ public partial class MusicPlayer : Form
 
             // Load the updated HTML file into the WebView2 control
             webView.Source = new Uri($"file://{fileName}");
-        }*/
+        } */
 
+        // BEGIN ChatGPT code
+        webView.Source = new Uri(musicUrl);
+
+        // Inject JavaScript to click the play button
+        webView.CoreWebView2.NavigationCompleted += CoreWebView2_NavigationCompleted;
+        // END ChatGPT code
     }
 
+    // begin ChatGPT code, typed
+    private async void CoreWebView2_NavigationCompleted(object sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
+    {
+        await Task.Delay(2000);
+
+        // Check if the navigation was successful
+        if (e.IsSuccess)
+        {
+            MessageBox.Show("Navigation successful. Running script...");
+            // JavaScript code to simulate a click on the play button with more detailed diagnostics
+            string script = @"
+            (function() {
+                // Find the play-pause button using its data-testid attribute
+                let playPauseButton = document.querySelector('button[data-testid=""play-pause-button""]');
+                if (playPauseButton) {
+                    // Simulate a click on the play-pause button
+                    playPauseButton.click();
+                } else {
+                    console.log('Play-pause button not found in embedded player.');
+                }
+            })();
+        ";
+
+            // Execute the script and show the result
+            var result = await webView.CoreWebView2.ExecuteScriptAsync(script);
+            MessageBox.Show(result);
+
+            // detach to handle if navigation occurs again
+            webView.CoreWebView2.NavigationCompleted -= CoreWebView2_NavigationCompleted;
+        }
+        else
+        {
+            MessageBox.Show("Navigation to the URL failed.");
+        }
+
+    }
+    // end ChatGPT code
+
+    
+
+    // TODO: Remove this if no references and not needed
     private async void playAlbum(string albumUrl)
     {
         await webView.EnsureCoreWebView2Async(null);
@@ -166,6 +227,22 @@ public partial class MusicPlayer : Form
 
         if (e.ColumnIndex == -1)
         {
+            String imageURL = dataGridView.Rows[rowClicked].Cells[3].Value?.ToString();
+
+            // test code starts here -- appears to be working as intended
+            if (imageURL == null || imageURL.Length == 0)
+            {
+                pictureBox1.Hide();
+                //return;
+            }
+            else
+            {
+                MessageBox.Show("Image URL=" + imageURL);
+                //pictureBox1.Load(imageURL);   // had to handle according to Wikipedia's User-Agent policy: https://meta.wikimedia.org/wiki/User-Agent_policy
+                LoadImageFromUrlAsync(imageURL, pictureBox1);
+                pictureBox1.Show();
+            }
+
             MessageBox.Show("Play button clicked");
             toBePlayed = dataGridView.Rows[(int)rowClicked].Cells[4].Value?.ToString();
             forNewQuery = dataGridView.Rows[(int)rowClicked].Cells[1].Value?.ToString();
@@ -175,7 +252,8 @@ public partial class MusicPlayer : Form
             AlbumsDAO myAlbumsDAOTest = new AlbumsDAO();
 
             bottomBindingSource.DataSource = myAlbumsDAOTest.retrieveTracksFromAlbum(forNewQuery);
-            playAlbum(toBePlayed);
+            //playAlbum(toBePlayed);
+            RetrieveMusic(toBePlayed);
 
             // tell the grid view that the binding source is associated with it
             dataGridView2.DataSource = bottomBindingSource;
@@ -253,7 +331,8 @@ public partial class MusicPlayer : Form
                 AlbumsDAO myAlbumsDAO4 = new AlbumsDAO();
 
                 bottomBindingSource.DataSource = myAlbumsDAO4.retrieveTracksFromAlbum(forNewQuery);
-                playAlbum(toBePlayed);
+                //playAlbum(toBePlayed);
+                RetrieveMusic(toBePlayed);
 
                 // tell the grid view that the binding source is associated with it
                 dataGridView2.DataSource = bottomBindingSource;
@@ -313,7 +392,8 @@ public partial class MusicPlayer : Form
                 AlbumsDAO myAlbumsDAOTest = new AlbumsDAO();
 
                 bottomBindingSource.DataSource = myAlbumsDAOTest.retrieveTracksFromAlbum(forNewQuery);
-                playAlbum(toBePlayed);
+                //playAlbum(toBePlayed);
+                RetrieveMusic(toBePlayed);
 
                 // tell the grid view that the binding source is associated with it
                 dataGridView2.DataSource = bottomBindingSource;
@@ -413,7 +493,8 @@ public partial class MusicPlayer : Form
                     AlbumsDAO myAlbumsDAO4 = new AlbumsDAO();
 
                     bottomBindingSource.DataSource = myAlbumsDAO4.retrieveTracksFromAlbum(forNewQuery);
-                    playAlbum(toBePlayed);
+                    //playAlbum(toBePlayed);
+                    RetrieveMusic(toBePlayed);
 
                     // tell the grid view that the binding source is associated with it
                     dataGridView2.DataSource = bottomBindingSource;
