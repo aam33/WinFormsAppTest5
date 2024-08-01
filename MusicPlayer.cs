@@ -14,6 +14,13 @@ public partial class MusicPlayer : Form
     BindingSource bottomBindingSource = new BindingSource();
     public MusicPlayer()
     {
+        // enable console
+        bool useConsole = true;
+        if (useConsole)
+        {
+            AllocConsole();
+        }
+
         InitializeComponent();
 
         webView.Source = new Uri("https://accounts.spotify.com/en/login?continue=https%3A%2F%2Fopen.spotify.com%2F");
@@ -26,19 +33,16 @@ public partial class MusicPlayer : Form
         this.KeyPreview = true;
     }
 
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+    private static extern bool AllocConsole();
 
-
+    // consider TODO: take in boolean, if true then autoclick play, if false don't (don't autoplay unless side play button clicked)
     private async void RetrieveMusic(string musicUrl)
     {
         await webView.EnsureCoreWebView2Async(null);
         // Set a standard User-Agent string
-        webView.CoreWebView2.Settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36";
-        //webView.CoreWebView2.Navigate("https://www.youtube.com/embed/9FqaMehDsUc");
-
-
-
-        //webView.CoreWebView2.Navigate(musicUrl);
-
+        //webView.CoreWebView2.Settings.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36";
+        //webView.CoreWebView2.Navigate("https://www.youtube.com/embed/9FqaMehDsUc");   // WebView2 tutorial
 
 
         //webView.CoreWebView2.Navigate("https://open.spotify.com/embed/track/4PTG3Z6ehGkBFwjybzWkR8"); // rick roll
@@ -74,12 +78,14 @@ public partial class MusicPlayer : Form
     // begin ChatGPT code, typed
     private async void CoreWebView2_NavigationCompleted(object sender, Microsoft.Web.WebView2.Core.CoreWebView2NavigationCompletedEventArgs e)
     {
-        await Task.Delay(2000);
+        //await Task.Delay(1000);
 
         // Check if the navigation was successful
         if (e.IsSuccess)
         {
-            MessageBox.Show("Navigation successful. Running script...");
+            //MessageBox.Show("Navigation successful. Starting script...");
+            await Task.Delay(500);
+
             // JavaScript code to simulate a click on the play button with more detailed diagnostics
             string script = @"
             (function() {
@@ -88,18 +94,21 @@ public partial class MusicPlayer : Form
                 if (playPauseButton) {
                     // Simulate a click on the play-pause button
                     playPauseButton.click();
+                    console.log('Play-pause button press simulated.');
                 } else {
                     console.log('Play-pause button not found in embedded player.');
                 }
             })();
         ";
 
-            // Execute the script and show the result
+            // Execute the script and show the result   // remove var?
             var result = await webView.CoreWebView2.ExecuteScriptAsync(script);
-            MessageBox.Show(result);
+            //MessageBox.Show(result);  // returns null (worth looking into?)
+            MessageBox.Show("Script successfully executed");
 
             // detach to handle if navigation occurs again
             webView.CoreWebView2.NavigationCompleted -= CoreWebView2_NavigationCompleted;
+            MessageBox.Show("Music should be playing");
         }
         else
         {
@@ -189,7 +198,9 @@ public partial class MusicPlayer : Form
         // add explicit cast
         DataGridView dataGridView = (DataGridView)sender;
 
-        // Check if the click was on a header cell
+        generalCellClick(dataGridView, e);
+
+        /*// Check if the click was on a header cell
         if (e.RowIndex == -1)
         {
             // handle header click
@@ -227,7 +238,8 @@ public partial class MusicPlayer : Form
 
         if (e.ColumnIndex == -1)
         {
-            String imageURL = dataGridView.Rows[rowClicked].Cells[3].Value?.ToString();
+            sidePlayButton(dataGridView, forNewQuery, toBePlayed, rowClicked);
+            /*String imageURL = dataGridView.Rows[rowClicked].Cells[3].Value?.ToString();
 
             // test code starts here -- appears to be working as intended
             if (imageURL == null || imageURL.Length == 0)
@@ -243,7 +255,7 @@ public partial class MusicPlayer : Form
                 pictureBox1.Show();
             }
 
-            MessageBox.Show("Play button clicked");
+            MessageBox.Show("Side play button clicked");
             toBePlayed = dataGridView.Rows[(int)rowClicked].Cells[4].Value?.ToString();
             forNewQuery = dataGridView.Rows[(int)rowClicked].Cells[1].Value?.ToString();
             MessageBox.Show("for bottom grid view: " + forNewQuery);
@@ -261,7 +273,8 @@ public partial class MusicPlayer : Form
 
         // END TEST CODE FOR CLICKING THE ALBUM PLAY BUTTON
 
-
+        // TODO: Get rid of message boxes
+        // TODO: what if cells(column) 2 isn't always the URL?
 
         // Check if column index is valid
         if (e.ColumnIndex >= 0 && e.ColumnIndex < dataGridView.Columns.Count)
@@ -285,8 +298,6 @@ public partial class MusicPlayer : Form
             // TODO: Get rid of message boxes
             // TODO: what if cells(column) 4 isn't always the URL?
 
-            //String forNewQuery = "";
-            //String toBePlayed = "";
             // set headerText if there is any
             String headerText2 = "";
             if (dataGridView.Columns[e.ColumnIndex].HeaderText != null)
@@ -314,6 +325,7 @@ public partial class MusicPlayer : Form
                 MessageBox.Show(forNewQuery);
 
                 AlbumsDAO myAlbumsDAO2 = new AlbumsDAO();
+
                 bottomBindingSource.DataSource = myAlbumsDAO2.searchAlbumTitles(forNewQuery);
 
                 // tell the grid view that the binding source is associated with it
@@ -337,114 +349,86 @@ public partial class MusicPlayer : Form
                 // tell the grid view that the binding source is associated with it
                 dataGridView2.DataSource = bottomBindingSource;
             }
-        }
+        }*/
     }
 
-    // TODO: if on dataGridView2 album view, anything should take you to tracklist
     private void dataGridView2_CellClick(object sender, DataGridViewCellEventArgs e)
     {
         // add explicit cast
         DataGridView dataGridView2 = (DataGridView)sender;
 
+        generalCellClick(dataGridView2, e);
+    }
+
+    private void generalCellClick(DataGridView inputDataGridView, DataGridViewCellEventArgs e)
+    {
+        String headerText = "";
         // Check if the click was on a header cell
         if (e.RowIndex == -1)
         {
             MessageBox.Show("Column header clicked");
-            if (e.ColumnIndex >= 0 && e.ColumnIndex < dataGridView2.Columns.Count)
+            if (e.ColumnIndex >= 0 && e.ColumnIndex < inputDataGridView.Columns.Count)
             {
                 // Gets or sets the caption text on the column's header cell
-                String headerText = dataGridView2.Columns[e.ColumnIndex].HeaderText;
+                headerText = inputDataGridView.Columns[e.ColumnIndex].HeaderText;
                 MessageBox.Show("Header contents: " + headerText);
             }
             // TODO: Sort by that column by calling method in AlbumsDAO???
             return;
         }
 
-        // click on bottom row
-        if (e.RowIndex >= dataGridView2.RowCount - 1 || dataGridView2.CurrentCell.Value == null)
+        // trying to handle case if someone clicks on that bottom row
+        if (e.RowIndex >= inputDataGridView.RowCount - 1 || inputDataGridView.CurrentCell.Value == null)
         {
-            return;
+            return;     // Do nothing if an invalid cell or the new row placeholder is clicked
         }
 
         // get the row number clicked
-        int rowClicked = dataGridView2.CurrentRow.Index;
-        String contents = dataGridView2.CurrentCell.Value?.ToString();
+        int rowClicked = inputDataGridView.CurrentRow.Index;
+        String contents = inputDataGridView.CurrentCell.Value?.ToString();
         MessageBox.Show("Clicked row " + rowClicked);
+        // cell contents works!! :D
         MessageBox.Show("Cell contents: " + contents);
 
-
-        // TEST CODE FOR CLICKING THE PLAY BUTTON
+        // TEST CODE FOR CLICKING THE ALBUM PLAY BUTTON
 
         String forNewQuery = "";
-        String toBePlayed = "";
-        
+        String albumToBePlayed = "";
+
         if (e.ColumnIndex == -1)
         {
-            // if on filtered album view
-            if (dataGridView2.Columns.Count == 5)
-            {
-                MessageBox.Show("Play button clicked");
-                toBePlayed = dataGridView2.Rows[(int)rowClicked].Cells[4].Value?.ToString();
-                forNewQuery = dataGridView2.Rows[(int)rowClicked].Cells[1].Value?.ToString();
-                MessageBox.Show("for bottom grid view: " + forNewQuery);
-                MessageBox.Show("album URL: " + toBePlayed);
-
-                AlbumsDAO myAlbumsDAOTest = new AlbumsDAO();
-
-                bottomBindingSource.DataSource = myAlbumsDAOTest.retrieveTracksFromAlbum(forNewQuery);
-                //playAlbum(toBePlayed);
-                RetrieveMusic(toBePlayed);
-
-                // tell the grid view that the binding source is associated with it
-                dataGridView2.DataSource = bottomBindingSource;
-            }
-            // else if on track view
-            else if (dataGridView2.Columns.Count == 3)
-            {
-                // this string could be toBePlayed to reduce code complexity
-                String musicURL = dataGridView2.Rows[rowClicked].Cells[2].Value?.ToString();
-
-                if (string.IsNullOrEmpty(musicURL))
-                {
-                    MessageBox.Show("<ERROR: TRACK NOT FOUND>");
-                    return;
-                }
-                else
-                {
-                    MessageBox.Show("Music URL=" + musicURL);
-                    // new code to pull up video player
-                    RetrieveMusic(musicURL);
-                }
-            }
+            sidePlayButton(inputDataGridView, forNewQuery, albumToBePlayed, rowClicked);
         }
 
-        // END TEST CODE FOR CLICKING THE PLAY BUTTON
-
+        // END TEST CODE FOR CLICKING THE ALBUM PLAY BUTTON
 
         // TODO: Get rid of message boxes
         // TODO: what if cells(column) 2 isn't always the URL?
 
         // Check if column index is valid
-        if (e.ColumnIndex >= 0 && e.ColumnIndex < dataGridView2.Columns.Count)
+        if (e.ColumnIndex >= 0 && e.ColumnIndex < inputDataGridView.Columns.Count)
         {
             // if on the filtered album view, switch to track view when user clicks on album
             // else (on the tracklist), pull up video player for given URL
 
-            //String forNewQuery = "";
-            //String toBePlayed = "";
+            if (inputDataGridView.Columns[e.ColumnIndex].HeaderText != null)
+            {
+                headerText = inputDataGridView.Columns[(int)e.ColumnIndex].HeaderText;
+            }
 
-            String headerText3 = dataGridView2.Columns[e.ColumnIndex].HeaderText;
-            MessageBox.Show("check if column index is valid/headerText3: " + headerText3);
-            if ((headerText3 == "AlbumTitle") || (headerText3 == "AlbumID") || (headerText3 == "Artist") || (headerText3 == "ReleaseYear") || (headerText3 == "ImageURL") || (headerText3 == "AlbumURL"))    // on album view for particular artist
+            MessageBox.Show("check if column index is valid/headerText: " + headerText);
+            if (inputDataGridView.Columns.Count == 5)   // if on album view for particular artist (refactoring)
+            //if ((headerText == "AlbumTitle") || (headerText == "AlbumID") || (headerText == "Artist") || (headerText == "ReleaseYear") || (headerText == "ImageURL") || (headerText == "AlbumURL"))    // on album view for particular artist
             {
 
                 // always update image
-                String imageURL = dataGridView2.Rows[rowClicked].Cells[3].Value?.ToString();
+                String imageURL = inputDataGridView.Rows[rowClicked].Cells[3].Value?.ToString();
 
                 // test code starts here -- appears to be working as intended
                 if (imageURL == null || imageURL.Length == 0)
                 {
                     pictureBox1.Hide();
+                    //return;
                 }
                 else
                 {
@@ -456,10 +440,10 @@ public partial class MusicPlayer : Form
 
 
                 // switch screen no matter what if already on album view (if you get to this part of code, you are on album view)
-                if ((headerText3 == "AlbumTitle") || (headerText3 == "AlbumID") || (headerText3 == "ReleaseYear") || (headerText3 == "ImageURL"))
+                if ((headerText == "AlbumTitle") || (headerText == "AlbumID") || (headerText == "ReleaseYear") || (headerText == "ImageURL"))
                 {
                     // forNewQuery needs to be AlbumTitle unless you click in Artist column
-                    forNewQuery = dataGridView2.Rows[(int)rowClicked].Cells[1].Value?.ToString();
+                    forNewQuery = inputDataGridView.Rows[(int)rowClicked].Cells[1].Value?.ToString();
                     MessageBox.Show(forNewQuery);
 
                     AlbumsDAO myAlbumsDAO2 = new AlbumsDAO();
@@ -469,55 +453,110 @@ public partial class MusicPlayer : Form
                     // tell the grid view that the binding source is associated with it
                     dataGridView2.DataSource = bottomBindingSource;
                 }
-                else if (headerText3 == "Artist")
+                else if (headerText == "Artist")
                 {
                     // forNewQuery needs to be AlbumTitle unless you click in Artist column
                     forNewQuery = contents;
                     MessageBox.Show(forNewQuery);
 
-                    AlbumsDAO myAlbumsDAO3 = new AlbumsDAO();
-                    bottomBindingSource.DataSource = myAlbumsDAO3.searchAlbumTitles(forNewQuery);
+                    AlbumsDAO myAlbumsDAO2 = new AlbumsDAO();
+                    bottomBindingSource.DataSource = myAlbumsDAO2.searchAlbumTitles(forNewQuery);
 
                     // tell the grid view that the binding source is associated with it
                     // different binding source for different gridviews
                     dataGridView2.DataSource = bottomBindingSource;
                 }
-                else if (headerText3 == "AlbumURL")
+                else if (headerText == "AlbumURL")
                 {
                     // forNewQuery needs to be AlbumTitle unless you click in Artist column
-                    toBePlayed = dataGridView2.Rows[(int)rowClicked].Cells[4].Value?.ToString();
-                    forNewQuery = dataGridView2.Rows[(int)rowClicked].Cells[1].Value?.ToString();
+                    albumToBePlayed = inputDataGridView.Rows[(int)rowClicked].Cells[4].Value?.ToString();
+                    forNewQuery = inputDataGridView.Rows[(int)rowClicked].Cells[1].Value?.ToString();
                     MessageBox.Show("for bottom grid view: " + forNewQuery);
-                    MessageBox.Show("album URL: " + toBePlayed);
+                    MessageBox.Show("album URL: " + albumToBePlayed);
 
-                    AlbumsDAO myAlbumsDAO4 = new AlbumsDAO();
+                    AlbumsDAO myAlbumsDAO2 = new AlbumsDAO();
 
-                    bottomBindingSource.DataSource = myAlbumsDAO4.retrieveTracksFromAlbum(forNewQuery);
-                    //playAlbum(toBePlayed);
-                    RetrieveMusic(toBePlayed);
+                    bottomBindingSource.DataSource = myAlbumsDAO2.retrieveTracksFromAlbum(forNewQuery);
+                    //RetrieveMusic(albumToBePlayed);
 
                     // tell the grid view that the binding source is associated with it
                     dataGridView2.DataSource = bottomBindingSource;
                 }
             }
-            else if ((headerText3 == "TrackTitle") || (headerText3 == "TrackNumber") || (headerText3 == "MusicURL"))    // showing tracklist
+            else if (inputDataGridView.Columns.Count == 3)  // else if showing tracklist (refactoring)
+            //else if ((headerText == "TrackTitle") || (headerText == "TrackNumber") || (headerText == "MusicURL"))    // showing tracklist
             {
-                String musicURL = dataGridView2.Rows[rowClicked].Cells[2].Value?.ToString();
+                String musicURL = inputDataGridView.Rows[rowClicked].Cells[2].Value?.ToString();
 
                 if (string.IsNullOrEmpty(musicURL))
                 {
-                    MessageBox.Show("headerText3: " + headerText3);
+                    MessageBox.Show("headerText: " + headerText);
                     MessageBox.Show("<ERROR: TRACK NOT FOUND>");
                     return;
                 }
                 else
                 {
-                    MessageBox.Show("headerText3: " + headerText3);
+                    MessageBox.Show("headerText: " + headerText);
                     MessageBox.Show("Music URL=" + musicURL);
-                    // TODO: pull up embedded video player
                     // new code to pull up video player
-                    RetrieveMusic(musicURL);
+                    //RetrieveMusic(musicURL);
                 }
+            }
+        }
+    }
+
+    private void sidePlayButton(DataGridView inputDataGridView, string inputForNewQuery, string toBePlayed, int rowClicked)
+    {
+        // if on filtered album view
+        if (inputDataGridView.Columns.Count == 5)
+        {
+            String imageURL = inputDataGridView.Rows[rowClicked].Cells[3].Value?.ToString();
+
+            // test code starts here -- appears to be working as intended
+            if (imageURL == null || imageURL.Length == 0)
+            {
+                pictureBox1.Hide();
+                //return;
+            }
+            else
+            {
+                MessageBox.Show("Image URL=" + imageURL);
+                //pictureBox1.Load(imageURL);   // had to handle according to Wikipedia's User-Agent policy: https://meta.wikimedia.org/wiki/User-Agent_policy
+                LoadImageFromUrlAsync(imageURL, pictureBox1);
+                pictureBox1.Show();
+            }
+
+            MessageBox.Show("Side play button clicked");
+            toBePlayed = inputDataGridView.Rows[(int)rowClicked].Cells[4].Value?.ToString();
+            inputForNewQuery = inputDataGridView.Rows[(int)rowClicked].Cells[1].Value?.ToString();
+            MessageBox.Show("for bottom grid view: " + inputForNewQuery);
+            MessageBox.Show("album URL: " + toBePlayed);
+
+            AlbumsDAO myAlbumsDAOTest = new AlbumsDAO();
+
+            bottomBindingSource.DataSource = myAlbumsDAOTest.retrieveTracksFromAlbum(inputForNewQuery);
+            RetrieveMusic(toBePlayed);
+
+            // tell the grid view that the binding source is associated with it
+            // do not change this from dataGridView2 because we always want that tracklist on the bottom
+            dataGridView2.DataSource = bottomBindingSource;
+        }
+        // else if on track view
+        else if (inputDataGridView.Columns.Count == 3)
+        {
+            // this string could be toBePlayed to reduce code complexity
+            String musicURL = inputDataGridView.Rows[rowClicked].Cells[2].Value?.ToString();
+
+            if (string.IsNullOrEmpty(musicURL))
+            {
+                MessageBox.Show("<ERROR: TRACK NOT FOUND>");
+                return;
+            }
+            else
+            {
+                MessageBox.Show("Music URL=" + musicURL);
+                // new code to pull up video player
+                RetrieveMusic(musicURL);
             }
         }
     }
