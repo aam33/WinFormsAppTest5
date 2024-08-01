@@ -499,7 +499,7 @@ public partial class MusicPlayer : Form
                     MessageBox.Show("headerText: " + headerText);
                     MessageBox.Show("Music URL=" + musicURL);
                     // new code to pull up video player
-                    //RetrieveMusic(musicURL);
+                    RetrieveMusic(musicURL);
                 }
             }
         }
